@@ -1,0 +1,18 @@
+{
+  "name": "wpmu-suite",
+  "description": "Adds several multisite features",
+  "license": "GPLv3",
+  "authors": [
+    "Kailan Wyatt"
+  ],
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+  }
+}

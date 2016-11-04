@@ -1,0 +1,17 @@
+{
+  "generator-plugin-wp": {
+    "name": "WPMU Suite",
+    "homepage": "https://kailanwyatt.com",
+    "description": "Adds several multisite features",
+    "version": "0.0.1",
+    "author": "Kailan Wyatt",
+    "authoremail": "idev@kailanwyatt.com",
+    "authorurl": "https://kailanwyatt.com",
+    "license": "GPLv3",
+    "slug": "wpmu-suite",
+    "classname": "WPMU_Suite",
+    "classprefix": "WPMU_",
+    "prefix": "wpmu_suite",
+    "year": 2016
+  }
+}
