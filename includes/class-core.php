@@ -76,6 +76,6 @@ class WPMU_Core {
 	 * @return void
 	 */
 	public function setup_main_page() {
-		include_once( wpmu_suite()->path . 'templates/site_list.php' );
+		include_once( wpmu_suite()->path . 'templates/site-list.php' );
 	}
 }

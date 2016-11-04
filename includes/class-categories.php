@@ -26,7 +26,7 @@ class WPMU_Categories {
 	 * @var   class
 	 * @since NEXT
 	 */
-	protected $categories = null;
+	public $categories = null;
 
 	/**
 	 * Constructor
@@ -37,23 +37,23 @@ class WPMU_Categories {
 	 */
 	public function __construct( $plugin ) {
 		$this->plugin = $plugin;
-		$this->get_categories();
 		$this->taxonomy = 'site_category';
+		//$this->get_categories();
 		$this->hooks();
 	}
 
 	public function get_categories() {
 		$terms = get_terms( array(
-		    'taxonomy' => $this->taxonomy,
-		    'hide_empty' => false,
+			'taxonomy' => $this->taxonomy,
+			'hide_empty' => false,
 		) );
 		// array to store terms;
 		$categories = array();
-		if ( ! empty( $terms ) && ! is_wp_error( $terms ) ){
-		    foreach ( $terms as $term ) {
+		if ( ! empty( $terms ) && ! is_wp_error( $terms ) ) {
+			foreach ( $terms as $term ) {
 				// store term id and name
-		        $categories[$term->term_id] = $term->name;
-		    }
+				$categories[ $term->term_id ] = $term->name;
+			}
 		}
 		// set categories.
 		$this->categories = $categories;
@@ -68,6 +68,8 @@ class WPMU_Categories {
 		add_action( 'admin_menu', array( $this, 'setup_admin_page' ) );
 		add_action( 'init', array( $this, 'register_category_taxonomy' ), 12 );
 		add_action( 'cmb2_admin_init', array( $this, 'cmb2_metaboxes' ) );
+		add_action( 'wp_ajax_wpmu_suite_set_category', array( $this, 'set_category' ), 12, 2 );
+		add_filter( 'all_plugins', array( $this, 'alter_site_plugins' ), 12, 1 );
 	}
 
 	public function setup_admin_page() {
@@ -131,8 +133,6 @@ class WPMU_Categories {
 			}
 		}
 
-		//error_log( print_r( $options, true ) );
-
 		return $options;
 	}
 	/**
@@ -141,32 +141,75 @@ class WPMU_Categories {
 	 */
 	public function cmb2_metaboxes() {
 		// Start with an underscore to hide fields from custom fields list
-	    $prefix = '_yourprefix_';
+		$prefix = '_site_';
+		global $pagenow;
 
-	    /**
-	     * Initiate the metabox
-	     */
-	    $cmb = new_cmb2_box( array(
-	        'id'            => 'test_metabox',
-	        'title'         => __( 'Test Metabox', 'cmb2' ),
-	        'object_types'  => array( 'term' ), // Post type
-			'taxonomies'       => array( $this->taxonomy ),
-	        'context'       => 'normal',
-	        'priority'      => 'high',
-	        'show_names'    => true, // Show field names on the left
-	        // 'cmb_styles' => false, // false to disable the CMB stylesheet
-	        // 'closed'     => true, // Keep the metabox closed by default
-	    ) );
+		//if ( 'edit-tags.php' != $pagenow ) {
+			/**
+			 * Initiate the metabox
+			 */
+			$cmb = new_cmb2_box( array(
+				'id'			=> 'wpmu_suite_categories',
+				'title'		 => __( 'Categories', 'wpmu-suite' ),
+				'object_types'  => array( 'term' ), // Type
+				'taxonomies'	   => array( $this->taxonomy ),
+				'context'	   => 'normal',
+				'priority'	  => 'high',
+				'show_names'	=> true, // Show field names on the left
+			) );
 
-	    // Regular text field
-	    $cmb->add_field( array(
-	        'name'       => __( 'Plugins allowed', 'cmb2' ),
-	        'desc'       => __( 'Plugins allowed per site', 'cmb2' ),
-	        'id'         => $prefix . 'allowed_plugins',
-	        'type'       => 'multicheck',
-			'options' => $this->get_plugin_options(),
-	    ) );
+			// Multicheck field
+			$cmb->add_field( array(
+				'name'	   => __( 'Plugins allowed', 'wpmu-suite' ),
+				'desc'	   => __( 'Plugins allowed per site', 'wpmu-suite' ),
+				'id'		 => $prefix . 'allowed_plugins',
+				'type'	   => 'multicheck',
+				'options' => $this->get_plugin_options(),
+			) );
 
-	    // Add other metaboxes as needed
+		//}
+	}
+
+	public function set_category() {
+		$blog_id 	= (int) $_POST['blog_id'];
+		$category	= (int) $_POST['category'];
+		$term_taxonomy_ids = wp_set_object_terms( $blog_id, $category, $this->taxonomy );
+		if ( is_wp_error( $term_taxonomy_ids ) ) {
+			wp_send_json_error();
+		} else {
+			wp_send_json_success();
+		}
+	}
+
+	public function get_site_category( $blog_id = 0 ) {
+		$args = array( 'fields' => 'ids' );
+		$site_category = wp_get_object_terms( $blog_id,  wpmu_suite()->categories->taxonomy, $args );
+		if ( ! is_wp_error( $site_category ) ) {
+			if ( ! empty( $site_category ) ) {
+				$site_category = $site_category[0];
+			}
+		}
+		restore_current_blog();
+		return $site_category;
+	}
+
+	public function get_site_selected_plugins( $site_category_id = 0 ) {
+		$plugins = get_term_meta( $site_category_id, '_site_allowed_plugins' );
+		print_r( $plugins );
+		print_r( $site_category_id );
+	}
+	public function alter_site_plugins( $plugins = array() ) {
+		if ( is_main_site() ) {
+			return $plugins;
+		}
+		$blog_id 		= get_current_blog_id();
+		global $current_site;
+		switch_to_blog( $current_site->blog_id );
+		$site_category 	= $this->get_site_category( $blog_id );
+		if ( $site_category ) {
+			$plugins 	= $this->get_site_selected_plugins( $site_category );
+		}
+		restore_current_blog();
+		return $plugins;
 	}
 }

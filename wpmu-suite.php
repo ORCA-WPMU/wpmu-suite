@@ -286,7 +286,7 @@ final class WPMU_Suite {
 			case 'categories':
 				return $this->$field;
 			default:
-				throw new Exception( 'Invalid '. __CLASS__ .' property: ' . $field );
+				throw new Exception( 'Invalid ' . __CLASS__ . ' property: ' . $field );
 		}
 	}
 
@@ -298,7 +298,7 @@ final class WPMU_Suite {
 	 * @return bool   Result of include call.
 	 */
 	public static function include_file( $filename ) {
-		$file = self::dir( 'includes/class-'. $filename .'.php' );
+		$file = self::dir( 'includes/class-' . $filename . '.php' );
 		if ( file_exists( $file ) ) {
 			return include_once( $file );
 		}
@@ -348,3 +348,33 @@ add_action( 'plugins_loaded', array( wpmu_suite(), 'hooks' ) );
 
 register_activation_hook( __FILE__, array( wpmu_suite(), '_activate' ) );
 register_deactivation_hook( __FILE__, array( wpmu_suite(), '_deactivate' ) );
+
+add_action( 'init', 'register_category_taxonomy' );
+function register_category_taxonomy() {
+	// Add new taxonomy, make it hierarchical (like categories)
+	$labels = array(
+		'name'			  => _x( 'Categories', 'taxonomy general name', 'textdomain' ),
+		'singular_name'	 => _x( 'Category', 'taxonomy singular name', 'textdomain' ),
+		'search_items'	  => __( 'Search Categories', 'textdomain' ),
+		'all_items'		 => __( 'All Categories', 'textdomain' ),
+		'parent_item'	   => __( 'Parent Category', 'textdomain' ),
+		'parent_item_colon' => __( 'Parent Category:', 'textdomain' ),
+		'edit_item'		 => __( 'Edit Category', 'textdomain' ),
+		'update_item'	   => __( 'Update Category', 'textdomain' ),
+		'add_new_item'	  => __( 'Add New Category', 'textdomain' ),
+		'new_item_name'	 => __( 'New Category Name', 'textdomain' ),
+		'menu_name'		 => __( 'Category', 'textdomain' ),
+	);
+
+	$args = array(
+		'hierarchical'	  => true,
+		'labels'			=> $labels,
+		'show_ui'		   => true,
+		'show_admin_column' => true,
+		'query_var'		 => true,
+		'public' => false,
+		'rewrite' => false,
+	);
+
+	register_taxonomy( 'site_category', 'post', $args );
+}

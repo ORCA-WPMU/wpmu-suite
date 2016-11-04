@@ -363,17 +363,27 @@ class WPMU_MS_Sites_List_Table extends WP_List_Table {
 			restore_current_blog();
 		}
 	}
-
+	/**
+	 *
+	 */
 	public function column_category( $blog ) {
 		global $current_site;
 		switch_to_blog( $current_site->blog_id );
-		//echo $current_site->blog_id;
+		$args = array( 'fields' => 'ids' );
+		$site_category = wp_get_object_terms( $blog['blog_id'],  wpmu_suite()->categories->taxonomy, $args );
+		if ( ! is_wp_error( $site_category ) ) {
+			if ( ! empty( $site_category ) ) {
+				$site_category = $site_category[0];
+			}
+		}
 		$args = array(
-			'show_option_none' => __( 'Select category', 'textdomain' ),
+			'show_option_none' 	=> __( 'Select category', 'textdomain' ),
 			'class'				=> 'wpmu-suite-category',
-			'orderby'		  => 'name',
-			'hide_if_empty'	=> false,
-			'taxonomy'	=> wpmu_suite()->categories->taxonomy,
+			'orderby'		  	=> 'name',
+			'selected'			=> $site_category,
+			'id'				=> 'wpmu_suite-' . $blog['blog_id'],
+			'hide_empty'		=> false,
+			'taxonomy'			=> wpmu_suite()->categories->taxonomy,
 		);
 		wp_dropdown_categories( $args );
 		// let's switch back to the blog we were just on
@@ -480,21 +490,6 @@ class WPMU_MS_Sites_List_Table extends WP_List_Table {
 	 * @param string $column_name Current column name.
 	 */
 	public function column_default( $blog, $column_name ) {
-		switch ( $column_name ) {
-			case 'book_author':
-				$terms = get_the_term_list( $post_id, 'book_author', '', ',', '' );
-				if ( is_string( $terms ) ) {
-					echo $terms;
-				} else {
-					_e( 'Unable to get author(s)', 'your_text_domain' );
-				}
-				break;
-
-			case 'publisher':
-				echo get_post_meta( $post_id, 'publisher', true );
-				break;
-		}
-		echo 567;
 		/**
 		 * Fires for each registered custom column in the Sites list table.
 		 *
@@ -615,9 +610,5 @@ class WPMU_MS_Sites_List_Table extends WP_List_Table {
 		 */
 		$actions = apply_filters( 'manage_sites_action_links', array_filter( $actions ), $blog['blog_id'], $blogname );
 		return $this->row_actions( $actions );
-	}
-
-	public function display2(){
-		$this->get_columns();
 	}
 }
