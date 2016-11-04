@@ -21,6 +21,14 @@ class WPMU_Categories {
 	protected $plugin = null;
 
 	/**
+	 * Categories
+	 *
+	 * @var   class
+	 * @since NEXT
+	 */
+	protected $categories = null;
+
+	/**
 	 * Constructor
 	 *
 	 * @since  NEXT
@@ -29,9 +37,27 @@ class WPMU_Categories {
 	 */
 	public function __construct( $plugin ) {
 		$this->plugin = $plugin;
+		$this->get_categories();
+		$this->taxonomy = 'site_category';
 		$this->hooks();
 	}
 
+	public function get_categories() {
+		$terms = get_terms( array(
+		    'taxonomy' => $this->taxonomy,
+		    'hide_empty' => false,
+		) );
+		// array to store terms;
+		$categories = array();
+		if ( ! empty( $terms ) && ! is_wp_error( $terms ) ){
+		    foreach ( $terms as $term ) {
+				// store term id and name
+		        $categories[$term->term_id] = $term->name;
+		    }
+		}
+		// set categories.
+		$this->categories = $categories;
+	}
 	/**
 	 * Initiate our hooks
 	 *
@@ -81,7 +107,7 @@ class WPMU_Categories {
 			'rewrite' => false,
 		);
 
-		register_taxonomy( 'site_category', 'null', $args );
+		register_taxonomy( $this->taxonomy, 'null', $args );
 	}
 	/**
 	 * Get Site Plugins
@@ -124,7 +150,7 @@ class WPMU_Categories {
 	        'id'            => 'test_metabox',
 	        'title'         => __( 'Test Metabox', 'cmb2' ),
 	        'object_types'  => array( 'term' ), // Post type
-			'taxonomies'       => array( 'site_category' ),
+			'taxonomies'       => array( $this->taxonomy ),
 	        'context'       => 'normal',
 	        'priority'      => 'high',
 	        'show_names'    => true, // Show field names on the left
