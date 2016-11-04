@@ -17,6 +17,7 @@
  * @version 0.0.1
  */
 
+require_once( plugin_dir_path( __FILE__ ) . 'vendor/webdevstudios/cmb2/init.php' );
 /**
  * Copyright (c) 2016 Kailan Wyatt (email : idev@kailanwyatt.com)
  *
@@ -246,6 +247,9 @@ final class WPMU_Suite {
 	public static function meets_requirements() {
 		// Do checks for required classes / functions
 		// function_exists('') & class_exists('').
+		if ( ! is_multisite() ) {
+			return false;
+		}
 		// We have met all requirements.
 		return true;
 	}
@@ -259,7 +263,7 @@ final class WPMU_Suite {
 	public function requirements_not_met_notice() {
 		// Output our error.
 		echo '<div id="message" class="error">';
-		echo '<p>' . sprintf( __( 'WPMU Suite is missing requirements and has been <a href="%s">deactivated</a>. Please make sure all requirements are available.', 'wpmu-suite' ), admin_url( 'plugins.php' ) ) . '</p>';
+		echo '<p>' . sprintf( __( 'WPMU Suite requires multisite to be enabled and has been <a href="%s">deactivated</a>.', 'wpmu-suite' ), admin_url( 'plugins.php' ) ) . '</p>';
 		echo '</div>';
 	}
 

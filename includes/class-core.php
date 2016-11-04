@@ -48,7 +48,7 @@ class WPMU_Core {
 	 * @return void
 	 */
 	public function hooks() {
-		add_action( 'network_admin_menu', array( $this, 'setup_admin_menu' ) );
+		add_action( 'admin_menu', array( $this, 'setup_admin_menu' ) );
 	}
 
 	/**
@@ -58,6 +58,9 @@ class WPMU_Core {
 	 * @return void
 	 */
 	public function setup_admin_menu() {
+		if ( ! is_main_site() ) {
+			return;
+		}
 		add_menu_page(
 			__( 'WPMU Suite', 'wpmu-suite' ),
 			__( 'WPMU Suite', 'wpmu-suite' ),
@@ -73,6 +76,6 @@ class WPMU_Core {
 	 * @return void
 	 */
 	public function setup_main_page() {
-		echo 345678;
+		include_once( wpmu_suite()->path . 'templates/site_list.php' );
 	}
 }
