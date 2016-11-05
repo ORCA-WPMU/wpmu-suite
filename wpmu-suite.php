@@ -17,6 +17,7 @@
  * @version 0.0.1
  */
 
+require_once( plugin_dir_path( __FILE__ ) . 'vendor/webdevstudios/cmb2/init.php' );
 /**
  * Copyright (c) 2016 Kailan Wyatt (email : idev@kailanwyatt.com)
  *
@@ -147,7 +148,6 @@ final class WPMU_Suite {
 		$this->basename = plugin_basename( __FILE__ );
 		$this->url      = plugin_dir_url( __FILE__ );
 		$this->path     = plugin_dir_path( __FILE__ );
-		
 	}
 
 	/**
@@ -247,6 +247,9 @@ final class WPMU_Suite {
 	public static function meets_requirements() {
 		// Do checks for required classes / functions
 		// function_exists('') & class_exists('').
+		if ( ! is_multisite() ) {
+			return false;
+		}
 		// We have met all requirements.
 		return true;
 	}
@@ -260,7 +263,7 @@ final class WPMU_Suite {
 	public function requirements_not_met_notice() {
 		// Output our error.
 		echo '<div id="message" class="error">';
-		echo '<p>' . sprintf( __( 'WPMU Suite is missing requirements and has been <a href="%s">deactivated</a>. Please make sure all requirements are available.', 'wpmu-suite' ), admin_url( 'plugins.php' ) ) . '</p>';
+		echo '<p>' . sprintf( __( 'WPMU Suite requires multisite to be enabled and has been <a href="%s">deactivated</a>.', 'wpmu-suite' ), admin_url( 'plugins.php' ) ) . '</p>';
 		echo '</div>';
 	}
 
@@ -283,7 +286,7 @@ final class WPMU_Suite {
 			case 'categories':
 				return $this->$field;
 			default:
-				throw new Exception( 'Invalid '. __CLASS__ .' property: ' . $field );
+				throw new Exception( 'Invalid ' . __CLASS__ . ' property: ' . $field );
 		}
 	}
 
@@ -295,7 +298,7 @@ final class WPMU_Suite {
 	 * @return bool   Result of include call.
 	 */
 	public static function include_file( $filename ) {
-		$file = self::dir( 'includes/class-'. $filename .'.php' );
+		$file = self::dir( 'includes/class-' . $filename . '.php' );
 		if ( file_exists( $file ) ) {
 			return include_once( $file );
 		}
@@ -345,3 +348,33 @@ add_action( 'plugins_loaded', array( wpmu_suite(), 'hooks' ) );
 
 register_activation_hook( __FILE__, array( wpmu_suite(), '_activate' ) );
 register_deactivation_hook( __FILE__, array( wpmu_suite(), '_deactivate' ) );
+
+add_action( 'init', 'register_category_taxonomy' );
+function register_category_taxonomy() {
+	// Add new taxonomy, make it hierarchical (like categories)
+	$labels = array(
+		'name'			  => _x( 'Categories', 'taxonomy general name', 'textdomain' ),
+		'singular_name'	 => _x( 'Category', 'taxonomy singular name', 'textdomain' ),
+		'search_items'	  => __( 'Search Categories', 'textdomain' ),
+		'all_items'		 => __( 'All Categories', 'textdomain' ),
+		'parent_item'	   => __( 'Parent Category', 'textdomain' ),
+		'parent_item_colon' => __( 'Parent Category:', 'textdomain' ),
+		'edit_item'		 => __( 'Edit Category', 'textdomain' ),
+		'update_item'	   => __( 'Update Category', 'textdomain' ),
+		'add_new_item'	  => __( 'Add New Category', 'textdomain' ),
+		'new_item_name'	 => __( 'New Category Name', 'textdomain' ),
+		'menu_name'		 => __( 'Category', 'textdomain' ),
+	);
+
+	$args = array(
+		'hierarchical'	  => true,
+		'labels'			=> $labels,
+		'show_ui'		   => true,
+		'show_admin_column' => true,
+		'query_var'		 => true,
+		'public' => false,
+		'rewrite' => false,
+	);
+
+	register_taxonomy( 'site_category', 'post', $args );
+}
