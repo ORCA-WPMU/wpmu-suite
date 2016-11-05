@@ -73,6 +73,9 @@ class WPMU_Categories {
 	}
 
 	public function setup_admin_page() {
+		/**
+		 * @TODO Keep taxonomy menu open when under WPMU Suite parent menu
+		 */
 		add_submenu_page(
 			wpmu_suite()->core->main_menu_slug,
 			__( 'Categories', 'wpmu-suite' ),
@@ -80,23 +83,22 @@ class WPMU_Categories {
 			'manage_network',
 			'edit-tags.php?taxonomy=site_category'
 		);
-
 	}
 
 	public function register_category_taxonomy() {
 		// Add new taxonomy, make it hierarchical (like categories)
 		$labels = array(
-			'name'			  => _x( 'Categories', 'taxonomy general name', 'textdomain' ),
-			'singular_name'	 => _x( 'Category', 'taxonomy singular name', 'textdomain' ),
-			'search_items'	  => __( 'Search Categories', 'textdomain' ),
-			'all_items'		 => __( 'All Categories', 'textdomain' ),
-			'parent_item'	   => __( 'Parent Category', 'textdomain' ),
-			'parent_item_colon' => __( 'Parent Category:', 'textdomain' ),
-			'edit_item'		 => __( 'Edit Category', 'textdomain' ),
-			'update_item'	   => __( 'Update Category', 'textdomain' ),
-			'add_new_item'	  => __( 'Add New Category', 'textdomain' ),
-			'new_item_name'	 => __( 'New Category Name', 'textdomain' ),
-			'menu_name'		 => __( 'Category', 'textdomain' ),
+			'name'			  => _x( 'Categories', 'taxonomy general name', 'wpmu-suite' ),
+			'singular_name'	 => _x( 'Category', 'taxonomy singular name', 'wpmu-suite' ),
+			'search_items'	  => __( 'Search Categories', 'wpmu-suite' ),
+			'all_items'		 => __( 'All Categories', 'wpmu-suite' ),
+			'parent_item'	   => __( 'Parent Category', 'wpmu-suite' ),
+			'parent_item_colon' => __( 'Parent Category:', 'wpmu-suite' ),
+			'edit_item'		 => __( 'Edit Category', 'wpmu-suite' ),
+			'update_item'	   => __( 'Update Category', 'wpmu-suite' ),
+			'add_new_item'	  => __( 'Add New Category', 'wpmu-suite' ),
+			'new_item_name'	 => __( 'New Category Name', 'wpmu-suite' ),
+			'menu_name'		 => __( 'Category', 'wpmu-suite' ),
 		);
 
 		$args = array(
@@ -132,7 +134,9 @@ class WPMU_Categories {
 				$options[ $plugin_path ] = $plugin['Name'];
 			}
 		}
-
+		/**
+		 * @TODO Add apply_filters below
+		 */
 		return $options;
 	}
 	/**
@@ -163,12 +167,19 @@ class WPMU_Categories {
 			'type'	   => 'multicheck',
 			'options' => $this->get_plugin_options(),
 		) );
+
+		/**
+		 * @TODO Add image icons and/or thumbnails
+		 */
 	}
 
 	/**
 	 * Set Category via AJAXs
 	 */
 	public function set_category() {
+		/**
+		 * @TODO Add security nonce and permission checks
+		 */
 		$blog_id 	= (int) $_POST['blog_id'];
 		$category	= (int) $_POST['category'];
 		$term_taxonomy_ids = wp_set_object_terms( $blog_id, $category, $this->taxonomy );
